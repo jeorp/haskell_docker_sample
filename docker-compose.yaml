@@ -1,0 +1,11 @@
+version: '3'
+services:
+  dev:
+   image: centos:centos7
+   container_name: 'haskell-env'
+   tty: true 
+   ports:
+     - '3000:3000'
+   volumes:
+     - ./src:/workspace/src
+   working_dir: /workspace/src

@@ -1,0 +1,40 @@
+
+# Open this project on vscode on docker remote
+# with importing "docker-compose.yaml", not this one .
+# This fils is just for reminder of commands.
+RUN yum upgrade
+# setting for building yesod project or some.
+RUN yum install zlib-devel
+
+RUN yum install openssl-devel
+RUN yum install libgcrypt-devel
+
+RUN export LC_ALL=en_US.UTF-8
+
+# update gcc 7
+
+RUN yum install centos-release-scl
+RUN yum-config-manager --enable rhel-server-rhscl-7-rpms
+RUN yum install devtoolset-7
+RUN source scl_source enable devtoolset-7
+# write $HOME/.bashrc above command.
+RUN gcc -v
+
+
+
+# setting stack and cabal 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+ # with not installing haskell language server
+RUN ghcup install ghc 8.10.4
+RUN ghcup set ghc 8.10.4
+
+# for error happen.
+# RUN yum install ncurses-devel
+RUN yum install gmp gmp-devel 
+# 
+# finish 
+
+# Start haskell project
+EXPOSE 3000
+
+
