@@ -24,7 +24,6 @@ RUN gcc -v
 
 # setting stack and cabal 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
- # with not installing haskell language server
 RUN ghcup install ghc 8.10.4
 RUN ghcup set ghc 8.10.4
 
@@ -32,9 +31,15 @@ RUN ghcup set ghc 8.10.4
 # RUN yum install ncurses-devel
 RUN yum install gmp gmp-devel 
 # 
+# install nodejs
+RUN curl -fsSL https://rpm.nodesource.com/setup_14.x | bash -
+RUN yum install nodejs -y
+
+
 # finish 
 
 # Start haskell project
+# stack install implicit-hie
 EXPOSE 3000
 
 

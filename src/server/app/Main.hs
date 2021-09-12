@@ -5,10 +5,9 @@ import Network.HTTP
 import Text.HTML.TagSoup
 import Text.HTML.TagSoup.Match (tagOpen)
 
-data Broadcaster = BS String | TOKYO_MX String deriving Show
+data Broadcaster = BS | TOKYO_MX deriving Show
 
 data ProgramInfo = ProgramInfo {
-    broadcaster :: String,
     title :: String,
     category :: String,
     description :: String,
@@ -33,11 +32,11 @@ bsParseCore html = do
 
 bsSearchAnime :: String -> ProgramInfo 
 bsSearchAnime anime = do
-    ProgramInfo {broadcaster="", title="", category="", description="", url="", date="", time=""}
+    ProgramInfo {title="", category="", description="", url="", date="", time=""}
 
 bsListAllProgram :: [Tag String] -> [ProgramInfo]
 bsListAllProgram html = do
-    [ProgramInfo {broadcaster="", title="", category="", description="", url="", date="", time=""}]
+    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
 
 
 parse :: IO ()
