@@ -46,7 +46,7 @@ bsListAllProgram html = do
 
 mxParseCore :: [Tag String] -> [Tag String]
 mxParseCore html = do
-    html
+    dropWhile (~/= tag_start_table)  html
     where
         tag_start_table :: Tag String
         tag_start_table = TagOpen "tr" [("id","t500")]
@@ -67,7 +67,7 @@ mxIsAnime url = do
 
 nhkParseCore :: [Tag String] -> [Tag String]
 nhkParseCore html = do
-    html
+    dropWhile (~/= tag_start_table)  html
     where
         tag_start_table :: Tag String 
         tag_start_table = TagOpen "th" [("class", "time time-7")]
