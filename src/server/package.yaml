@@ -28,7 +28,8 @@ dependencies:
 - bytestring 
 - HTTP
 - http-streams
-
+- text
+- unicode-show
 library:
   source-dirs: src
 

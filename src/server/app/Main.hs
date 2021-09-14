@@ -1,17 +1,23 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Data.Char
+import qualified Data.ByteString.Char8 as C
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T 
 import Network.HTTP
 import Text.HTML.TagSoup
 import Text.HTML.TagSoup.Match (tagOpen)
 import Data.Bool (bool)
+import Text.Show.Unicode
 
 
 data Broadcaster = BS | TOKYO_MX | NHK deriving Show
 
 data ProgramInfo = ProgramInfo {
     title :: String,
-    category :: String,
+    category :: Bool,
     description :: String,
     url :: String, 
     date :: String,
@@ -36,7 +42,7 @@ bsParseCore html = do
 bsListAllProgram :: [Tag String] -> [ProgramInfo]
 bsListAllProgram html = do
 
-    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
+    [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
     where
         tag_section_day :: Tag String
         tag_section_day = TagOpen "div" [("data-date-programs", "一日の番組群")]
@@ -47,10 +53,12 @@ bsListAllProgram html = do
 
 mxParseCore :: [Tag String] -> [Tag String]
 mxParseCore html = do
-    dropWhile (~/= tag_start_table)  html
+    takeWhile (~/= tag_truncate) $ dropWhile (~/= tag_start_table)  html
     where
         tag_start_table :: Tag String
         tag_start_table = TagOpen "tr" [("id","t500")]
+        tag_truncate :: Tag String 
+        tag_truncate = TagClose "tbody"
 
 mxListAllProgram :: [Tag String] -> [ProgramInfo]
 mxListAllProgram html = do
@@ -61,7 +69,10 @@ mxListAllProgram html = do
         tag_section :: Tag String
         tag_section = TagOpen "td" [("class", "program_set tb_set_mx1")]
         i :: [Tag String] -> [Tag String]
-        i tags = takeWhile (~/= TagClose "td") tags
+        i tags = takeWhile (~/= tag_close) tags
+            where
+                tag_close :: Tag String 
+                tag_close = TagClose "td"
         h :: [Tag String] -> (String, [Tag String])
         h tags =  do
             let time = fromTagText $ tags !! 3
@@ -72,14 +83,22 @@ mxListAllProgram html = do
                 tag1 = TagOpen "div" [("class", "title")]
                 tag2 :: Tag String 
                 tag2 = TagOpen "div" [("class", "title title_long")]
-        g :: (String, [Tag String]) -> (String, String, [Tag String])
+        g :: (String, [Tag String]) -> (String, String, String,[Tag String])
         g (time, tags) = do
             let size = length tags
-            let url = fromAttrib "href" $ tags !! 1
-            (time, url, tags)
-        f :: (String, String, [Tag String]) -> ProgramInfo
-        f (time, url, tags) = do
-            ProgramInfo {title=time, category="", description="", url=url, date="", time=""}
+            let url_ = fromAttrib "href" $ tags !! 1
+            let title = ushow $ fromTagText $ tags !! 3
+            (title, time, "https://s.mxtv.jp/bangumi/" ++url_, dropWhile (~/= tag_about) tags)
+            where
+                tag_about :: Tag String 
+                tag_about = TagOpen "div" [("class", "about")]
+        f :: (String, String, String, [Tag String]) -> ProgramInfo
+        f (title, time, url, tags) = do
+            let about = if not (null tags)
+                            then fromTagText $ tags !! 1
+                            else ""
+            --let is_animme = mxIsAnime tags
+            ProgramInfo {title=title, category=True, description=ushow about, url=url, date="", time=time}
 
 mxIsAnime :: [Tag String] -> Bool 
 mxIsAnime html = do
@@ -98,7 +117,7 @@ nhkParseCore html = do
 
 nhkListAllProgram :: [Tag String] -> [ProgramInfo]
 nhkListAllProgram html = do
-    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
+    [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
     where
         tag_section :: Tag String 
         tag_section = TagOpen "td" [("","")]
@@ -107,18 +126,18 @@ nhkListAllProgram html = do
 
 searchAnime :: String -> [ProgramInfo] -> [ProgramInfo] 
 searchAnime anime list = do
-    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
+    [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
 
 searchDate :: String -> [ProgramInfo] -> [ProgramInfo]
 searchDate date list = do
-    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
+    [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
 
 
 parse :: IO ()
 parse = do
     html <- readFile "TOKYOMX_20210915.html"
-    writeFile "temp.txt" $  show  $ mxListAllProgram $ mxParseCore $ parseTags html
-    putStrLn "finish"
+    writeFile "temp.txt" $  ushow  $ mxListAllProgram $ mxParseCore $ parseTags html
+    putStrLn "finish" 
 
 main :: IO ()
 main = do

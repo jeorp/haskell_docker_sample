@@ -37,6 +37,8 @@ library
     , http-streams
     , http-types
     , tagsoup
+    , text
+    , unicode-show
     , wai
     , warp
   default-language: Haskell2010
@@ -56,6 +58,8 @@ executable server-exe
     , http-types
     , server
     , tagsoup
+    , text
+    , unicode-show
     , wai
     , warp
   default-language: Haskell2010
@@ -76,6 +80,8 @@ test-suite server-test
     , http-types
     , server
     , tagsoup
+    , text
+    , unicode-show
     , wai
     , warp
   default-language: Haskell2010
