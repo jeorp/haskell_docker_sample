@@ -4,6 +4,7 @@ import Data.Char
 import Network.HTTP
 import Text.HTML.TagSoup
 import Text.HTML.TagSoup.Match (tagOpen)
+import Data.Bool (bool)
 
 
 data Broadcaster = BS | TOKYO_MX | NHK deriving Show
@@ -53,14 +54,37 @@ mxParseCore html = do
 
 mxListAllProgram :: [Tag String] -> [ProgramInfo]
 mxListAllProgram html = do
-    [ProgramInfo {title="", category="", description="", url="", date="", time=""}]
+    let program = map (f . g . h . i) $ partitions (~== tag_section) html
+    program 
+
     where
         tag_section :: Tag String
         tag_section = TagOpen "td" [("class", "program_set tb_set_mx1")]
+        i :: [Tag String] -> [Tag String]
+        i tags = takeWhile (~/= TagClose "td") tags
+        h :: [Tag String] -> (String, [Tag String])
+        h tags =  do
+            let time = fromTagText $ tags !! 3
+            let program_part = dropWhile (\tag -> (~/= tag1) tag && (~/= tag2) tag) tags 
+            (show time, program_part)
+            where
+                tag1 :: Tag String 
+                tag1 = TagOpen "div" [("class", "title")]
+                tag2 :: Tag String 
+                tag2 = TagOpen "div" [("class", "title title_long")]
+        g :: (String, [Tag String]) -> (String, String, [Tag String])
+        g (time, tags) = do
+            let size = length tags
+            let url = fromAttrib "href" $ tags !! 1
+            (time, url, tags)
+        f :: (String, String, [Tag String]) -> ProgramInfo
+        f (time, url, tags) = do
+            ProgramInfo {title=time, category="", description="", url=url, date="", time=""}
 
-mxIsAnime :: String -> Bool 
-mxIsAnime url = do
-    True
+mxIsAnime :: [Tag String] -> Bool 
+mxIsAnime html = do
+    let genre = innerText $ dropWhile (~/= tag_genre) html
+    genre == "アニメ"
     where
         tag_genre :: Tag String 
         tag_genre = TagOpen "div" [("class","genre")]
@@ -92,8 +116,8 @@ searchDate date list = do
 
 parse :: IO ()
 parse = do
-    html <- readFile "BS11.html"
-    writeFile "temp.txt" $ innerText $ bsParseCore $ parseTags html
+    html <- readFile "TOKYOMX_20210915.html"
+    writeFile "temp.txt" $  show  $ mxListAllProgram $ mxParseCore $ parseTags html
     putStrLn "finish"
 
 main :: IO ()
