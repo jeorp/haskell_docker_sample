@@ -2,14 +2,9 @@
 module Main where
 
 import Data.Char
-import qualified Data.ByteString.Char8 as C
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as T 
 import Network.HTTP
 import Text.HTML.TagSoup
 import Text.HTML.TagSoup.Match (tagOpen)
-import Data.Bool (bool)
 import Text.Show.Unicode
 
 
@@ -30,26 +25,53 @@ openURL x = getResponseBody =<< simpleHTTP (getRequest x)
 
 bsParseCore :: [Tag String] -> [Tag String]
 bsParseCore html = do
-    let week_broadcaster = dropWhile (~/= tag_start_broadcaster)  html
-    week_broadcaster
+    let week_broadcaster =  takeWhile (~/= tag_truncate) . dropWhile (~/= tag_start_broadcaster)
+    week_broadcaster html
     where 
         tag_start_broadcaster :: Tag String
         tag_start_broadcaster = TagOpen "div" [("class", "broadcaster_box currentDate theday")]
-        tag_broadcaster :: Tag String
-        tag_broadcaster = TagOpen "div" [("class", "broadcaster_box")]
+        tag_truncate :: Tag String
+        tag_truncate = TagClose "section"
 
 
 bsListAllProgram :: [Tag String] -> [ProgramInfo]
 bsListAllProgram html = do
+    let programs_each_days = map i $ partitions (~== tag_section_day) html
+    let programs_each = map (partitions (~== tag_section)) programs_each_days
 
     [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
     where
         tag_section_day :: Tag String
-        tag_section_day = TagOpen "div" [("data-date-programs", "一日の番組群")]
-        tag_section_program :: Tag String
-        tag_section_program = TagOpen "div" [("data-program", "番組枠")]
+        tag_section_day = TagOpen "ul" [("","")]
+        tag_section :: Tag String 
+        tag_section = TagClose "li"
+        i :: [Tag String] -> [Tag String]
+        i = takeWhile (~/= tag_trun)
+            where 
+                tag_trun :: Tag String 
+                tag_trun = TagClose "ul"
 
-
+bsListDay :: (Int, [[Tag String]]) -> [ProgramInfo]
+bsListDay (index,tags_) = do
+    let filter_tags = filter (\ts -> not $ null ts && fromAttrib "class" (head ts) /= "dummy") $ map (tail . takeWhile (~/= tag_trun)) tags_
+    map (h. i) filter_tags
+    where
+        tag_trun :: Tag String 
+        tag_trun = TagClose "li"
+        i :: [Tag String] -> (String, String, String, [Tag String])
+        i program_tags = do
+            let url_ = fromAttrib "href" $ program_tags !! 1
+            let time = fromTagText $ program_tags !! 3
+            let genre = fromTagText $ program_tags !! 6
+            ("https://www.bs11.jp/program/"++url_,time, genre, dropWhile (~/= tag_trun) program_tags)
+            where
+                tag_trun :: Tag String 
+                tag_trun = TagOpen "span" [("class", "title")]
+        h :: (String, String, String, [Tag String]) -> ProgramInfo
+        h (url,time,genre,program_tags) = do
+            let title = fromTagText $ program_tags !! 1
+            let description = fromTagText $ program_tags !! 4
+            ProgramInfo {title=title, category=True, description=description, url=url, date=show index, time=time}
 
 mxParseCore :: [Tag String] -> [Tag String]
 mxParseCore html = do
@@ -69,7 +91,7 @@ mxListAllProgram html = do
         tag_section :: Tag String
         tag_section = TagOpen "td" [("class", "program_set tb_set_mx1")]
         i :: [Tag String] -> [Tag String]
-        i tags = takeWhile (~/= tag_close) tags
+        i = takeWhile (~/= tag_close) 
             where
                 tag_close :: Tag String 
                 tag_close = TagClose "td"
@@ -88,7 +110,7 @@ mxListAllProgram html = do
             let size = length tags
             let url_ = fromAttrib "href" $ tags !! 1
             let title = ushow $ fromTagText $ tags !! 3
-            (title, time, "https://s.mxtv.jp/bangumi/" ++url_, dropWhile (~/= tag_about) tags)
+            (tail title, time, "https://s.mxtv.jp/bangumi/" ++url_, dropWhile (~/= tag_about) tags)
             where
                 tag_about :: Tag String 
                 tag_about = TagOpen "div" [("class", "about")]
@@ -122,7 +144,8 @@ nhkListAllProgram html = do
         tag_section :: Tag String 
         tag_section = TagOpen "td" [("","")]
 
-
+nhkIsAnime :: String -> Bool 
+nhkIsAnime title = take 3 title == "アニメ"
 
 searchAnime :: String -> [ProgramInfo] -> [ProgramInfo] 
 searchAnime anime list = do
