@@ -8,7 +8,7 @@ import Text.HTML.TagSoup.Match (tagOpen)
 import Text.Show.Unicode
 
 
-data Broadcaster = BS | TOKYO_MX | NHK deriving Show
+data Broadcaster = BS11 | TOKYO_MX | NHK deriving Show
 
 data ProgramInfo = ProgramInfo {
     title :: String,
@@ -131,21 +131,38 @@ mxIsAnime html = do
         tag_genre = TagOpen "div" [("class","genre")]
 
 nhkParseCore :: [Tag String] -> [Tag String]
-nhkParseCore html = do
-    dropWhile (~/= tag_start_table)  html
+nhkParseCore = do
+    takeWhile (~/= tag_end_table) . dropWhile (~/= tag_start_table) 
     where
         tag_start_table :: Tag String 
-        tag_start_table = TagOpen "th" [("class", "time time-7")]
+        tag_start_table = TagOpen "div" [("class", "inner")]
+        tag_end_table :: Tag String
+        tag_end_table = TagClose "table"
 
 nhkListAllProgram :: [Tag String] -> [ProgramInfo]
 nhkListAllProgram html = do
-    [ProgramInfo {title="", category=True, description="", url="", date="", time=""}]
+    let programs_ = partitions (\tag -> isTagOpenName "div" tag && fromAttrib "class" tag == "phead") html
+    let programs = map  (takeWhile (~/= tag_trun)) programs_
+    map (h. i) programs
     where
-        tag_section :: Tag String 
-        tag_section = TagOpen "td" [("","")]
+        tag_trun :: Tag String 
+        tag_trun = TagClose "td"
+        i :: [Tag String] -> (String, [Tag String])
+        i program_tags = do
+            let time = fromTagText $ program_tags !! 3
+            let tags_trun = dropWhile (\tag -> isTagOpenName "a" tag && fromAttrib "class" tag == "to-dtl") program_tags
+            (time, tags_trun)
+        h :: (String, [Tag String]) -> ProgramInfo
+        h (time, tag_program) = do 
+            let url_ = fromAttrib "href" $ head tag_program
+            let title = fromTagText $ tag_program !! 1
+            let description = fromTagText $ tag_program !! 8
+            ProgramInfo {title=title, category=True, description=description, url=url_, date="", time=time}
 
 nhkIsAnime :: String -> Bool 
 nhkIsAnime title = take 3 title == "アニメ"
+
+
 
 searchAnime :: String -> [ProgramInfo] -> [ProgramInfo] 
 searchAnime anime list = do
