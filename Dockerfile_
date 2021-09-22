@@ -35,7 +35,8 @@ RUN yum install gmp gmp-devel
 RUN curl -fsSL https://rpm.nodesource.com/setup_14.x | bash -
 RUN yum install nodejs -y
 
-
+# for using sqlite 
+RUN yum install postgresql-devel
 # finish 
 
 # Start haskell project

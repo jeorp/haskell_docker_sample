@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: heroku-0.1.2.3@sha256:8a5f7b9a0a60178a6edb1e5e8cbcdb8d5ffb407939bc30deb8ae7d05e879e9a7,928
+    pantry-tree:
+      size: 497
+      sha256: 4ecfc76d483616cb8b5968e12896acbab7662b18894f7a82b7cb7d214da71f43
+  original:
+    hackage: heroku-0.1.2.3
 snapshots:
 - completed:
     size: 587113

@@ -21,7 +21,24 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
-- scotty == 0.12
+- wai
+- warp
+- http-types
+- resourcet
+- scotty
+- text
+- bytestring
+- blaze-html
+- persistent
+- persistent-template
+- persistent-sqlite
+- persistent-postgresql
+- monad-logger
+- heroku
+- transformers
+- wai-middleware-static
+- wai-extra
+- time
 
 library:
   source-dirs: src
