@@ -33,6 +33,7 @@ dependencies:
 - persistent-template
 - persistent-sqlite
 - persistent-postgresql
+- esqueleto
 - monad-logger
 - heroku
 - transformers

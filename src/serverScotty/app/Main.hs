@@ -1,23 +1,49 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GADTs                      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE QuasiQuotes                #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE FlexibleInstances          #-}
 
-module Main where
+import           Control.Monad.IO.Class  (liftIO)
+import           Database.Persist
+import           Database.Persist.Sqlite
+import           Database.Persist.TH
 
-import Text.Blaze.Html5.Attributes
-import Text.Blaze.Html.Renderer.Text
-import qualified Web.Scotty as S
-import qualified Text.Blaze.Html5 as H
-import qualified Text.Blaze.Html5.Attributes as A
-import Data.Monoid (mconcat)
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+Person
+    name String
+    age Int Maybe
+    deriving Show
+BlogPost
+    title String
+    authorId PersonId
+    deriving Show
+|]
 
-main = S.scotty 3000 $
-  S.get "/:word" $ do
-    S.html $ renderHtml render
+main :: IO ()
+main = runSqlite "a.db" $ do
+    --runMigration migrateAll
 
--- html template by Blaze.Html5
-render = do
-  H.html $ do
-    H.body $ do
-      H.h1 "My todo list"
-      H.ul $ do
-        H.li "learn haskell"
-        H.li "make a website"
+    insert $ Person "John Doe" $ Just 30
+    --janeId <- insert $ Person "Jane Doe" Nothing
+
+    --insert $ BlogPost "My fr1st p0st" johnId
+    --insert $ BlogPost "One more for good measure" johnId
+
+    oneJohnPost <- selectList [PersonName ==. "John Doe"] []
+    liftIO $ print (oneJohnPost :: [Entity Person])
+
+    --john <- get johnId
+    --liftIO $ print (john :: Maybe Person)
+
+    --delete janeId
+    --deleteWhere [BlogPostAuthorId ==. johnId]
