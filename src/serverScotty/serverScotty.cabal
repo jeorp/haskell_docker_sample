@@ -47,6 +47,7 @@ library
     , resourcet
     , scotty
     , silently
+    , tagsoup
     , test-framework
     , test-framework-hunit
     , text
@@ -83,6 +84,7 @@ executable serverScotty-exe
     , scotty
     , serverScotty
     , silently
+    , tagsoup
     , test-framework
     , test-framework-hunit
     , text
@@ -120,6 +122,7 @@ test-suite serverScotty-test
     , scotty
     , serverScotty
     , silently
+    , tagsoup
     , test-framework
     , test-framework-hunit
     , text
