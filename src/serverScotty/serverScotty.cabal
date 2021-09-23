@@ -31,19 +31,24 @@ library
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , blaze-html
     , bytestring
     , esqueleto
     , heroku
     , http-types
     , monad-logger
+    , parsec
     , persistent
     , persistent-postgresql
     , persistent-sqlite
     , persistent-template
     , resourcet
     , scotty
+    , silently
+    , test-framework
+    , test-framework-hunit
     , text
     , time
     , transformers
@@ -61,13 +66,15 @@ executable serverScotty-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , blaze-html
     , bytestring
     , esqueleto
     , heroku
     , http-types
     , monad-logger
+    , parsec
     , persistent
     , persistent-postgresql
     , persistent-sqlite
@@ -75,6 +82,9 @@ executable serverScotty-exe
     , resourcet
     , scotty
     , serverScotty
+    , silently
+    , test-framework
+    , test-framework-hunit
     , text
     , time
     , transformers
@@ -93,13 +103,15 @@ test-suite serverScotty-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , blaze-html
     , bytestring
     , esqueleto
     , heroku
     , http-types
     , monad-logger
+    , parsec
     , persistent
     , persistent-postgresql
     , persistent-sqlite
@@ -107,6 +119,9 @@ test-suite serverScotty-test
     , resourcet
     , scotty
     , serverScotty
+    , silently
+    , test-framework
+    , test-framework-hunit
     , text
     , time
     , transformers

@@ -17,6 +17,7 @@ import           Control.Monad.IO.Class  (liftIO)
 import           Database.Persist
 import           Database.Persist.Sqlite
 import           Database.Persist.TH
+import           Text.Parsec
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Person
@@ -31,9 +32,9 @@ BlogPost
 
 main :: IO ()
 main = runSqlite "a.db" $ do
-    --runMigration migrateAll
+    runMigration migrateAll
 
-    insert $ Person "John Doe" $ Just 30
+    --insert $ Person "John Doe" $ Just 30
     --janeId <- insert $ Person "Jane Doe" Nothing
 
     --insert $ BlogPost "My fr1st p0st" johnId

@@ -40,6 +40,11 @@ dependencies:
 - wai-middleware-static
 - wai-extra
 - time
+- parsec
+- HUnit
+- silently
+- test-framework
+- test-framework-hunit
 
 library:
   source-dirs: src
