@@ -27,7 +27,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 RUN ghcup install ghc 8.10.4
 RUN ghcup set ghc 8.10.4
 
-# for error happen.
+# ex. add some dependencies
 # RUN yum install ncurses-devel
 RUN yum install gmp gmp-devel 
 # 
