@@ -39,8 +39,7 @@ RUN yum install nodejs -y
 RUN yum install postgresql-devel
 # finish 
 
-# Start haskell project
-# stack install implicit-hie
+
 EXPOSE 3000
 
 
